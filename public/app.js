@@ -128,3 +128,75 @@ dropZone.ondrop = e => {
   dropZone.style.background = '';
   if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
 };
+
+// ---------- Analyze (calls backend -> Groq) ----------
+const statusSection = document.getElementById('statusSection');
+const statusText = document.getElementById('statusText');
+const resultsSection = document.getElementById('resultsSection');
+const genericError = document.getElementById('genericError');
+const canvas = document.getElementById('wordCloudCanvas');
+const downloadPngBtn = document.getElementById('downloadPngBtn');
+
+async function analyze(blob, filename) {
+  genericError.classList.add('hidden');
+  resultsSection.classList.add('hidden');
+  statusSection.classList.remove('hidden');
+  statusText.textContent = 'Uploading and transcribing…';
+
+  const fd = new FormData();
+  fd.append('audio', blob, filename);
+
+  try {
+    const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+
+    statusSection.classList.add('hidden');
+    renderWordCloud(data.terms);
+    resultsSection.classList.remove('hidden');
+  } catch (err) {
+    statusSection.classList.add('hidden');
+    genericError.textContent = err.message;
+    genericError.classList.remove('hidden');
+  }
+}
+
+analyzeRecBtn.onclick = () => {
+  if (!recordedBlob) return;
+  const ext = (recordedBlob.type.split('/')[1] || 'webm').split(';')[0];
+  analyze(recordedBlob, `recording.${ext}`);
+};
+
+analyzeUploadBtn.onclick = () => {
+  if (!uploadedFile) return;
+  analyze(uploadedFile, uploadedFile.name);
+};
+
+// ---------- Word cloud ----------
+function renderWordCloud(terms) {
+  if (!terms || !terms.length) {
+    genericError.textContent = 'No prominent terms were found in this audio.';
+    genericError.classList.remove('hidden');
+    return;
+  }
+  const maxScore = Math.max(...terms.map(t => t.score));
+  const list = terms.map(t => [t.term, Math.max(10, Math.round((t.score / maxScore) * 60))]);
+
+  WordCloud(canvas, {
+    list,
+    gridSize: 8,
+    weightFactor: 1,
+    fontFamily: 'system-ui, sans-serif',
+    color: 'random-dark',
+    backgroundColor: '#ffffff',
+    rotateRatio: 0.2,
+    drawOutOfBound: false
+  });
+}
+
+downloadPngBtn.onclick = () => {
+  const link = document.createElement('a');
+  link.download = 'word-cloud.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+};
