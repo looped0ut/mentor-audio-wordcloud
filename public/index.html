@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="x-brief-ref" content="TFG-WD-8823">
+<title>Mentor Session Word Cloud</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Mentor Session → Word Cloud</h1>
+    <p class="subtitle">Record or upload audio. AI transcribes it and pulls out the key terms.</p>
+
+    <section class="input-tabs">
+      <button id="tabRecord" class="tab active">🎙 Record</button>
+      <button id="tabUpload" class="tab">📁 Upload</button>
+    </section>
+
+    <section id="recordPanel" class="panel">
+      <div class="rec-controls">
+        <button id="startBtn">Start Recording</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <span id="recDot" class="rec-dot hidden"></span>
+        <span id="timer">00:00</span>
+      </div>
+      <p id="micError" class="error hidden"></p>
+      <div id="recPreview" class="hidden">
+        <audio id="recAudioPlayer" controls></audio>
+        <button id="discardBtn">Discard / Re-record</button>
+        <button id="analyzeRecBtn">Analyze this Recording</button>
+      </div>
+    </section>
+
+    <section id="uploadPanel" class="panel hidden">
+      <p class="limit-note">Max 25 MB or 10 minutes, whichever comes first. Accepted: MP3, WAV, M4A, AAC, OGG, WEBM, FLAC.</p>
+      <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.aac,.ogg,.webm,.flac">
+      <div id="dropZone" class="drop-zone">Drag & drop audio file here, or use the picker above</div>
+      <p id="fileError" class="error hidden"></p>
+      <div id="fileInfo" class="hidden">
+        <p><strong id="fileName"></strong></p>
+        <p id="fileMeta"></p>
+        <audio id="uploadAudioPlayer" controls></audio>
+        <button id="analyzeUploadBtn">Analyze this File</button>
+      </div>
+    </section>
+
+    <section id="statusSection" class="hidden">
+      <div class="spinner"></div>
+      <p id="statusText">Processing…</p>
+    </section>
+
+    <section id="resultsSection" class="hidden">
+      <h2>Word Cloud</h2>
+      <canvas id="wordCloudCanvas" width="800" height="450"></canvas>
+      <button id="downloadPngBtn">Download PNG</button>
+    </section>
+
+    <p id="genericError" class="error hidden"></p>
+  </div>
+
+  <script src="/constants.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
