@@ -6,7 +6,7 @@ extracted by AI, then rendered as a downloadable word cloud sized by prominence.
 ## What works
 - Live browser recording (start/stop, elapsed timer, active-recording indicator, playback, discard/re-record)
 - File upload (MP3/WAV/M4A/AAC/OGG/WEBM/FLAC), with format/size/duration validation (25MB / 10min cap)
-- Transcription + AI-based key term extraction (Groq Whisper + Llama 3.3, not raw word counts)
+- Transcription + AI-based key term extraction (Groq Whisper + GPT-OSS-120B, not raw word counts)
 - Word cloud rendered on canvas, sized by AI-assigned prominence score
 - PNG download of the cloud
 - Responsive down to 390px width
@@ -25,8 +25,10 @@ Visit http://localhost:3000
 
 ## AI service used and why
 Groq was chosen because it exposes an OpenAI-compatible API with both a fast Whisper transcription
-endpoint and Llama chat models on one free-tier key, which minimized integration time under a tight
-deadline compared to wiring two separate providers.
+endpoint and chat models on one free-tier key, which minimized integration time under a tight
+deadline compared to wiring two separate providers. The keyword-extraction model was originally
+`llama-3.3-70b-versatile`, but was switched to `openai/gpt-oss-120b` after the former became
+inaccessible on standard Groq API keys.
 
 ## Key decisions / tradeoffs
 1. No database — session-only state, per the brief; kept scope minimal to prioritize a working core.
@@ -40,7 +42,14 @@ deadline compared to wiring two separate providers.
 
 ## AI coding tools used
 Claude was used to scaffold the Express backend, the recording/upload frontend logic, and the
-word-cloud rendering wiring, generated and reviewed file-by-file.
+word-cloud rendering wiring, generated and reviewed file-by-file. Claude was also used to debug a
+deprecated/inaccessible-model API error from Groq and a Render deployment configuration issue
+(missing environment variable value).
+
+## Deployment
+Deployed on Render (free tier) as an Express web service. `GROQ_API_KEY` is set via Render's
+Environment tab, not committed to the repo. Note: on the free tier the service spins down after
+inactivity, so the first request after idle time can take ~20–50 seconds to respond.
 
 ## What I'd build next with another week
 - Bonus features: transcript display + copy/download, remove-a-word rerender, saved past analyses
